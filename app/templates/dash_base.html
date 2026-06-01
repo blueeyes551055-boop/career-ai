@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="app-shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <i class="bi bi-compass-fill" style="color: var(--amber-500)"></i> {{ app_name }}
+    </div>
+    {% block sidebar %}{% endblock %}
+    <div class="mt-auto pt-3">
+      <a class="nav-link" href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-box-arrow-left"></i> Log out
+      </a>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <button class="btn btn-sm btn-outline-navy mobile-menu-btn" data-toggle-sidebar>
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="text-muted-2 small d-none d-sm-inline">{{ current_user.email }}</span>
+        <span class="badge {{ 'badge-soft' if current_user.is_admin else 'badge-navy' }} rounded-pill px-3 py-2">
+          <i class="bi {{ 'bi-shield-lock' if current_user.is_admin else 'bi-mortarboard' }}"></i>
+          {{ 'Admin' if current_user.is_admin else 'Student' }}
+        </span>
+      </div>
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,79 @@
+{% extends "admin_base.html" %}
+{% set active = 'questions' %}
+{% block title %}Manage Questions — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Questions</h1>
+    <p class="text-muted-2 mb-0">Aptitude &amp; interest items used in the assessment.</p>
+  </div>
+  <a href="{{ url_for('admin.question_form') }}" class="btn btn-navy">
+    <i class="bi bi-plus-lg"></i> New question
+  </a>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th style="width:42px">#</th>
+          <th>Question</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in questions %}
+        <tr>
+          <td class="text-muted-2">{{ loop.index }}</td>
+          <td>
+            <div class="fw-medium">{{ q.text|truncate(80) }}</div>
+            {% if q.qtype == 'interest' or q.category == 'interest' %}
+              <span class="small text-muted-2">Interest area: {{ q.interest_area }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-soft">{{ q.category.replace('_', ' ')|title }}</span>
+          </td>
+          <td class="text-muted-2 small">{{ q.qtype|upper }}</td>
+          <td class="text-center">
+            <form method="POST" action="{{ url_for('admin.question_toggle', qid=q.id) }}" class="d-inline">
+              {% if q.is_active %}
+              <button class="btn btn-sm btn-soft-success" title="Click to deactivate">
+                <i class="bi bi-check-circle-fill"></i> Active
+              </button>
+              {% else %}
+              <button class="btn btn-sm btn-soft-muted" title="Click to activate">
+                <i class="bi bi-slash-circle"></i> Inactive
+              </button>
+              {% endif %}
+            </form>
+          </td>
+          <td class="text-end text-nowrap">
+            <a href="{{ url_for('admin.question_form', qid=q.id) }}" class="btn btn-sm btn-outline-navy">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('admin.question_delete', qid=q.id) }}" class="d-inline"
+                  onsubmit="return confirm('Delete this question permanently?');">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted-2 py-4">
+            No questions yet. <a href="{{ url_for('admin.question_form') }}">Add your first question</a>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+

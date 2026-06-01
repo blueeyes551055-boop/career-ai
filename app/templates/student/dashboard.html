@@ -1,0 +1,76 @@
+{% extends "student_base.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1">Hello, {{ current_user.full_name.split()[0] }} 👋</h1>
+<p class="text-muted-2">Here's your career-discovery overview.</p>
+
+<div class="row g-3 mt-1">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card p-3 h-100">
+      <div class="lbl">Tests taken</div>
+      <div class="num mt-1">{{ attempts|length }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card p-3 h-100">
+      <div class="lbl">Questions in test</div>
+      <div class="num mt-1">{{ n_questions }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card p-3 h-100">
+      <div class="lbl">Latest overall</div>
+      <div class="num mt-1">{{ '%.0f'|format(latest.overall_score) ~ '%' if latest else '—' }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card p-3 h-100">
+      <div class="lbl">Top match</div>
+      <div class="num mt-1" style="font-size:1.2rem">
+        {{ latest.recommendations[0].name if latest and latest.recommendations else '—' }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card p-4 h-100">
+      <h2 class="h5">Ready to discover your path?</h2>
+      <p class="text-muted-2">The assessment covers logical reasoning, analytical thinking,
+        verbal ability and your interest areas. It takes about 10 minutes.</p>
+      <div>
+        <a href="{{ url_for('student.test') }}" class="btn btn-accent">
+          <i class="bi bi-play-fill"></i> {{ 'Retake the test' if attempts else 'Start the test' }}
+        </a>
+        {% if latest %}
+        <a href="{{ url_for('student.result', attempt_id=latest.id) }}" class="btn btn-outline-navy ms-2">
+          View latest result</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Recent activity</h2>
+      {% if attempts %}
+        <ul class="list-unstyled mb-0">
+          {% for a in attempts[:4] %}
+          <li class="d-flex justify-content-between border-bottom py-2">
+            <a href="{{ url_for('student.result', attempt_id=a.id) }}">
+              {{ a.created_at.strftime('%d %b %Y, %H:%M') }}</a>
+            <span class="badge badge-soft rounded-pill">{{ '%.0f'|format(a.overall_score) }}%</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted-2 mb-0">No tests yet — take your first assessment to see results here.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

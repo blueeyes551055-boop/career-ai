@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Create account — {{ app_name }}{% endblock %}
+
+{% block body %}
+<div class="auth-wrap">
+  <div class="auth-aside">
+    <a class="brand text-white text-decoration-none" href="{{ url_for('main.index') }}">
+      <i class="bi bi-compass-fill" style="color:var(--amber-400)"></i> {{ app_name }}
+    </a>
+    <div>
+      <p class="quote">Map your strengths.<br>Find your direction.</p>
+      <ul class="text-white-50 list-unstyled mt-3">
+        <li class="mb-2"><i class="bi bi-check2-circle"></i> Smart aptitude &amp; interest test</li>
+        <li class="mb-2"><i class="bi bi-check2-circle"></i> AI-ranked career matches</li>
+        <li class="mb-2"><i class="bi bi-check2-circle"></i> Matching university programs</li>
+        <li class="mb-2"><i class="bi bi-check2-circle"></i> Downloadable PDF report</li>
+      </ul>
+    </div>
+    <div class="small text-white-50">AI-Based Career Counselling System</div>
+  </div>
+
+  <div class="auth-form">
+    <div class="inner">
+      <h1 class="h3 mb-1">Create your account</h1>
+      <p class="text-muted-2 mb-4">It takes less than a minute.</p>
+      <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+        <div class="mb-3">
+          <label class="form-label">Full name</label>
+          <input type="text" name="full_name" class="form-control" value="{{ full_name or '' }}" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email address</label>
+          <input type="email" name="email" class="form-control" value="{{ email or '' }}" required>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Confirm password</label>
+            <input type="password" name="confirm_password" class="form-control" required minlength="6">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-accent w-100 py-2">Create account</button>
+      </form>
+      <p class="text-center mt-4 mb-0 small">
+        Already registered? <a href="{{ url_for('auth.login') }}">Log in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

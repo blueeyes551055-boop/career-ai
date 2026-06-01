@@ -1,0 +1,91 @@
+{% extends "admin_base.html" %}
+{% set active = 'programs' %}
+{% block title %}{{ 'Edit' if p else 'New' }} Program — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.programs') }}" class="text-muted-2 small"><i class="bi bi-arrow-left"></i> Back to programs</a>
+  <h1 class="h3 mt-1 mb-0">{{ 'Edit' if p else 'New' }} program</h1>
+</div>
+
+<form method="POST">
+<div class="row g-3" style="max-width:1000px">
+  <div class="col-lg-7">
+    <div class="card p-4 h-100">
+      <div class="mb-3">
+        <label class="form-label">Program name</label>
+        <input type="text" name="name" class="form-control" required
+               value="{{ form.name if form else (p.name if p else '') }}"
+               placeholder="e.g. BSc Computer Science">
+      </div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">Degree level</label>
+          <input type="text" name="degree_level" class="form-control"
+                 value="{{ form.degree_level if form else (p.degree_level if p else '') }}"
+                 placeholder="Bachelor">
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Duration</label>
+          <input type="text" name="duration" class="form-control"
+                 value="{{ form.duration if form else (p.duration if p else '') }}"
+                 placeholder="4 years">
+        </div>
+      </div>
+      <div class="mb-3 mt-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" rows="3" class="form-control"
+                  placeholder="What students learn in this program…">{{ form.description if form else (p.description if p else '') }}</textarea>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Suggested universities</label>
+        <textarea name="universities" rows="2" class="form-control"
+                  placeholder="One per line, or comma-separated">{{ form.universities if form else (p.universities if p else '') }}</textarea>
+      </div>
+      <div class="form-check form-switch mt-2">
+        {% set active_on = form.get('is_active') if form else (p.is_active if p else True) %}
+        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ 'checked' if active_on }}>
+        <label class="form-check-label" for="isActive">Active</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Linked careers</h2>
+      <p class="small text-muted-2">This program is suggested when any linked career is recommended.</p>
+      {% set linked_ids = (p.careers|map(attribute='id')|list) if p else [] %}
+      {% set form_linked = form.getlist('careers') if form else [] %}
+      <div class="d-flex flex-column gap-2">
+        {% for cr in all_careers %}
+        {% set checked = (cr.id|string in form_linked) if form else (cr.id in linked_ids) %}
+        <label class="check-tile {{ 'is-checked' if checked }}">
+          <input type="checkbox" name="careers" value="{{ cr.id }}" {{ 'checked' if checked }}>
+          <span>{{ cr.name }}</span>
+        </label>
+        {% else %}
+        <div class="text-muted-2 small">No careers available yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-navy"><i class="bi bi-check-lg"></i> Save program</button>
+    <a href="{{ url_for('admin.programs') }}" class="btn btn-light">Cancel</a>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('.check-tile input').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      cb.closest('.check-tile').classList.toggle('is-checked', cb.checked);
+    });
+  });
+</script>
+{% endblock %}
+
+

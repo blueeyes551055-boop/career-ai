@@ -1,0 +1,111 @@
+{% extends "admin_base.html" %}
+{% set active = 'careers' %}
+{% block title %}{{ 'Edit' if c else 'New' }} Career — {{ app_name }}{% endblock %}
+
+{% macro fval(field, default='') %}{{ form.get(field) if form else default }}{% endmacro %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.careers') }}" class="text-muted-2 small"><i class="bi bi-arrow-left"></i> Back to careers</a>
+  <h1 class="h3 mt-1 mb-0">{{ 'Edit' if c else 'New' }} career</h1>
+</div>
+
+<form method="POST">
+<div class="row g-3" style="max-width:1000px">
+  <div class="col-lg-7">
+    <div class="card p-4 h-100">
+      <div class="mb-3">
+        <label class="form-label">Career name</label>
+        <input type="text" name="name" class="form-control" required
+               value="{{ form.name if form else (c.name if c else '') }}" placeholder="e.g. Data Scientist">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" rows="3" class="form-control"
+                  placeholder="What this career involves…">{{ form.description if form else (c.description if c else '') }}</textarea>
+      </div>
+      <div class="row g-3">
+        <div class="col-sm-4">
+          <label class="form-label">Icon <span class="text-muted-2 small">(Bootstrap)</span></label>
+          <input type="text" name="icon" class="form-control"
+                 value="{{ form.icon if form else (c.icon if c else 'bi-briefcase') }}" placeholder="bi-cpu">
+        </div>
+        <div class="col-sm-4">
+          <label class="form-label">Avg. salary</label>
+          <input type="text" name="avg_salary" class="form-control"
+                 value="{{ form.avg_salary if form else (c.avg_salary if c else '') }}" placeholder="$95k / yr">
+        </div>
+        <div class="col-sm-4">
+          <label class="form-label">Growth outlook</label>
+          <input type="text" name="growth_outlook" class="form-control"
+                 value="{{ form.growth_outlook if form else (c.growth_outlook if c else '') }}" placeholder="High">
+        </div>
+      </div>
+      <div class="form-check form-switch mt-3">
+        {% set active_on = form.get('is_active') if form else (c.is_active if c else True) %}
+        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ 'checked' if active_on }}>
+        <label class="form-check-label" for="isActive">Active</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Aptitude / interest profile</h2>
+      <p class="small text-muted-2">Ideal score (0–100) for this career on each dimension. The AI matches student results against these.</p>
+      {% for key in feature_keys %}
+      {% set pv = (form.get('profile_' ~ key) if form else (c.profile.get(key, 50) if c else 50)) %}
+      <div class="mb-2">
+        <div class="d-flex justify-content-between">
+          <label class="form-label mb-0 small text-capitalize">{{ key }}</label>
+          <span class="small text-muted-2 profile-val">{{ pv }}</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" class="form-range profile-range"
+               name="profile_{{ key }}" value="{{ pv }}"
+               oninput="this.parentNode.querySelector('.profile-val').textContent = this.value">
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-4">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Linked university programs</h2>
+      {% set linked_ids = (c.programs|map(attribute='id')|list) if c else [] %}
+      {% set form_linked = form.getlist('programs') if form else [] %}
+      <div class="row g-2">
+        {% for p in all_programs %}
+        {% set checked = (p.id|string in form_linked) if form else (p.id in linked_ids) %}
+        <div class="col-md-6 col-lg-4">
+          <label class="check-tile {{ 'is-checked' if checked }}">
+            <input type="checkbox" name="programs" value="{{ p.id }}" {{ 'checked' if checked }}>
+            <span>{{ p.name }}</span>
+            <small class="text-muted-2">{{ p.degree_level }}</small>
+          </label>
+        </div>
+        {% else %}
+        <div class="col-12 text-muted-2 small">No programs available yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-navy"><i class="bi bi-check-lg"></i> Save career</button>
+    <a href="{{ url_for('admin.careers') }}" class="btn btn-light">Cancel</a>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('.check-tile input').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      cb.closest('.check-tile').classList.toggle('is-checked', cb.checked);
+    });
+  });
+</script>
+{% endblock %}
+
+

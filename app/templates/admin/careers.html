@@ -1,0 +1,58 @@
+{% extends "admin_base.html" %}
+{% set active = 'careers' %}
+{% block title %}Manage Careers — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Careers</h1>
+    <p class="text-muted-2 mb-0">Career paths the AI can recommend, each with an aptitude/interest profile.</p>
+  </div>
+  <a href="{{ url_for('admin.career_form') }}" class="btn btn-navy">
+    <i class="bi bi-plus-lg"></i> New career
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for c in careers %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card p-3 h-100">
+      <div class="d-flex align-items-start gap-3">
+        <div class="icon-badge"><i class="bi {{ c.icon or 'bi-briefcase' }}"></i></div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start">
+            <h2 class="h6 mb-1">{{ c.name }}</h2>
+            {% if not c.is_active %}<span class="badge-soft">Hidden</span>{% endif %}
+          </div>
+          <p class="small text-muted-2 mb-2">{{ (c.description or '')|truncate(90) }}</p>
+          <div class="small text-muted-2 mb-2">
+            {% if c.avg_salary %}<i class="bi bi-cash-coin"></i> {{ c.avg_salary }}{% endif %}
+            {% if c.growth_outlook %} &middot; <i class="bi bi-graph-up-arrow"></i> {{ c.growth_outlook }}{% endif %}
+          </div>
+          <div class="small text-muted-2 mb-3">
+            <i class="bi bi-mortarboard"></i> {{ c.programs|length }} linked program(s)
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.career_form', cid=c.id) }}" class="btn btn-sm btn-outline-navy">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('admin.career_delete', cid=c.id) }}" class="d-inline"
+                  onsubmit="return confirm('Delete {{ c.name }}? This cannot be undone.');">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="card p-4 text-center text-muted-2">
+      No careers yet. <a href="{{ url_for('admin.career_form') }}">Add one</a> or run the seed script.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+

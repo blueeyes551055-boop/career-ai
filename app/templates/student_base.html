@@ -1,0 +1,17 @@
+{% extends "dash_base.html" %}
+
+{% block sidebar %}
+<nav class="nav flex-column">
+  <a class="nav-link {{ 'active' if active=='dashboard' }}" href="{{ url_for('student.dashboard') }}">
+    <i class="bi bi-grid-1x2"></i> Dashboard</a>
+  <a class="nav-link {{ 'active' if active=='test' }}" href="{{ url_for('student.test') }}">
+    <i class="bi bi-ui-checks-grid"></i> Take Aptitude Test</a>
+  <a class="nav-link {{ 'active' if active=='history' }}" href="{{ url_for('student.history') }}">
+    <i class="bi bi-clock-history"></i> My Results</a>
+  <div class="nav-section">Account</div>
+  <a class="nav-link {{ 'active' if active=='profile' }}" href="{{ url_for('student.profile') }}">
+    <i class="bi bi-person-gear"></i> Profile</a>
+</nav>
+{% endblock %}
+
+

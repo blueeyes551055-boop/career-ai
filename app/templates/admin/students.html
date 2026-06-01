@@ -1,0 +1,49 @@
+{% extends "admin_base.html" %}
+{% set active = 'students' %}
+{% block title %}Students — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h1 class="h3 mb-1">Students</h1>
+  <p class="text-muted-2 mb-0">Registered students and their assessment activity.</p>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Education</th>
+          <th class="text-center">Tests taken</th>
+          <th>Last attempt</th>
+          <th class="text-end">Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr style="cursor:pointer" onclick="window.location='{{ url_for('admin.student_detail', uid=row.user.id) }}'">
+          <td class="fw-medium">
+            <a href="{{ url_for('admin.student_detail', uid=row.user.id) }}">{{ row.user.full_name }}</a>
+          </td>
+          <td class="text-muted-2">{{ row.user.email }}</td>
+          <td class="text-muted-2">{{ row.user.education_level or '—' }}</td>
+          <td class="text-center">
+            <span class="badge-soft">{{ row.attempts }}</span>
+          </td>
+          <td class="text-muted-2 small">
+            {{ row.last.created_at.strftime('%d %b %Y, %H:%M') if row.last else '—' }}
+          </td>
+          <td class="text-end text-muted-2 small">{{ row.user.created_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted-2 py-4">No students registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+

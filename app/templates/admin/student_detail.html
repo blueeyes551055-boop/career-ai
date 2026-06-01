@@ -1,0 +1,87 @@
+{% extends "admin_base.html" %}
+{% set active = 'students' %}
+{% block title %}{{ student.full_name }} — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.students') }}" class="text-muted-2 small"><i class="bi bi-arrow-left"></i> Back to students</a>
+  <h1 class="h3 mt-1 mb-0">{{ student.full_name }}</h1>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Profile</h2>
+      <ul class="list-unstyled small mb-0 mt-2">
+        <li class="py-1"><span class="text-muted-2">Email:</span> {{ student.email }}</li>
+        <li class="py-1"><span class="text-muted-2">Phone:</span> {{ student.phone or '—' }}</li>
+        <li class="py-1"><span class="text-muted-2">Education:</span> {{ student.education_level or '—' }}</li>
+        <li class="py-1"><span class="text-muted-2">Institution:</span> {{ student.institution or '—' }}</li>
+        <li class="py-1"><span class="text-muted-2">Joined:</span> {{ student.created_at.strftime('%d %b %Y') }}</li>
+        <li class="py-1"><span class="text-muted-2">Total attempts:</span> {{ attempts|length }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Assessment history</h2>
+      {% if attempts %}
+      <div class="accordion accordion-flush mt-2" id="attemptsAcc">
+        {% for a in attempts %}
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button {{ 'collapsed' if not loop.first }}" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#att{{ a.id }}">
+              <span class="me-3">{{ a.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+              <span class="badge-soft">Overall {{ a.overall_score|round(0)|int }}%</span>
+            </button>
+          </h3>
+          <div id="att{{ a.id }}" class="accordion-collapse collapse {{ 'show' if loop.first }}"
+               data-bs-parent="#attemptsAcc">
+            <div class="accordion-body">
+              <div class="row g-2 mb-3">
+                {% set scores = [('Logical', a.logical_score), ('Analytical', a.analytical_score),
+                                 ('Verbal', a.verbal_score), ('Overall', a.overall_score)] %}
+                {% for label, val in scores %}
+                <div class="col-6 col-md-3">
+                  <div class="mini-stat">
+                    <div class="num">{{ val|round(0)|int }}%</div>
+                    <div class="lbl">{{ label }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <h4 class="small text-uppercase text-muted-2 mb-2">Recommended careers</h4>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                {% for rec in a.recommendations %}
+                <span class="badge-soft"><i class="bi {{ rec.icon or 'bi-briefcase' }}"></i>
+                  {{ rec.name }} ({{ rec.match }}%)</span>
+                {% else %}
+                <span class="text-muted-2 small">No recommendations stored.</span>
+                {% endfor %}
+              </div>
+
+              <h4 class="small text-uppercase text-muted-2 mb-2">Suggested programs</h4>
+              <div class="d-flex flex-wrap gap-2">
+                {% for pr in a.programs %}
+                <span class="badge-soft"><i class="bi bi-mortarboard"></i> {{ pr.name }}</span>
+                {% else %}
+                <span class="text-muted-2 small">No programs stored.</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted-2 mt-2 mb-0">This student hasn't completed any assessments yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

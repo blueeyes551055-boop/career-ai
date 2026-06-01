@@ -1,0 +1,20 @@
+{% extends "dash_base.html" %}
+
+{% block sidebar %}
+<nav class="nav flex-column">
+  <a class="nav-link {{ 'active' if active=='dashboard' }}" href="{{ url_for('admin.dashboard') }}">
+    <i class="bi bi-speedometer2"></i> Dashboard</a>
+  <div class="nav-section">Content</div>
+  <a class="nav-link {{ 'active' if active=='questions' }}" href="{{ url_for('admin.questions') }}">
+    <i class="bi bi-question-circle"></i> Questions</a>
+  <a class="nav-link {{ 'active' if active=='careers' }}" href="{{ url_for('admin.careers') }}">
+    <i class="bi bi-briefcase"></i> Careers</a>
+  <a class="nav-link {{ 'active' if active=='programs' }}" href="{{ url_for('admin.programs') }}">
+    <i class="bi bi-mortarboard"></i> University Programs</a>
+  <div class="nav-section">Reports</div>
+  <a class="nav-link {{ 'active' if active=='students' }}" href="{{ url_for('admin.students') }}">
+    <i class="bi bi-people"></i> Students &amp; Results</a>
+</nav>
+{% endblock %}
+
+

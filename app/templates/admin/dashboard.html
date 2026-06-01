@@ -1,0 +1,88 @@
+{% extends "admin_base.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Admin Dashboard — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Admin dashboard</h1>
+    <p class="text-muted-2 mb-0">System overview &amp; reports.</p>
+  </div>
+  <form method="POST" action="{{ url_for('admin.retrain') }}">
+    <button class="btn btn-outline-navy"><i class="bi bi-arrow-repeat"></i> Retrain AI model</button>
+  </form>
+</div>
+
+<div class="row g-3">
+  {% set cards = [
+    ('Students', stats.students, 'bi-people'),
+    ('Questions', stats.questions, 'bi-question-circle'),
+    ('Active questions', stats.active_questions, 'bi-check2-square'),
+    ('Careers', stats.careers, 'bi-briefcase'),
+    ('Programs', stats.programs, 'bi-mortarboard'),
+    ('Tests taken', stats.attempts, 'bi-clipboard-data')
+  ] %}
+  {% for label, val, icon in cards %}
+  <div class="col-6 col-md-4 col-lg-2">
+    <div class="card stat-card p-3 h-100">
+      <i class="bi {{ icon }}" style="color:var(--amber-500); font-size:1.2rem"></i>
+      <div class="num mt-1">{{ val }}</div>
+      <div class="lbl">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Most recommended careers</h2>
+      {% if top_careers %}
+      <canvas id="careerChart" height="220"></canvas>
+      {% else %}
+      <p class="text-muted-2 mb-0 mt-2">No test data yet.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Recent assessments</h2>
+      {% if recent %}
+      <ul class="list-unstyled mb-0">
+        {% for a in recent %}
+        <li class="d-flex justify-content-between border-bottom py-2">
+          <a href="{{ url_for('admin.student_detail', uid=a.student.id) }}">{{ a.student.full_name }}</a>
+          <span class="small text-muted-2">{{ a.created_at.strftime('%d %b, %H:%M') }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted-2 mb-0">No assessments completed yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if top_careers %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById('careerChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ top_careers | map(attribute=0) | list | tojson }},
+      datasets: [{
+        label: 'Times recommended',
+        data: {{ top_careers | map(attribute=1) | list | tojson }},
+        backgroundColor: '#1f3a5f', borderRadius: 6
+      }]
+    },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { x: { ticks: { precision: 0 } } } }
+  });
+</script>
+{% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: career-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python seed_data.py && gunicorn run:app

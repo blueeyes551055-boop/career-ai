@@ -1,0 +1,140 @@
+{% extends "admin_base.html" %}
+{% set active = 'questions' %}
+{% block title %}{{ 'Edit' if q else 'New' }} Question — {{ app_name }}{% endblock %}
+
+{% set cur_category = form.category if form else (q.category if q else '') %}
+{% set cur_text = form.text if form else (q.text if q else '') %}
+{% set cur_interest = form.interest_area if form else (q.interest_area if q else '') %}
+{% if form %}
+  {% set cur_options = form.getlist('option') %}
+  {% set cur_correct = form.correct_index %}
+  {% set cur_active = form.get('is_active') %}
+{% else %}
+  {% set cur_options = (q.options if q else []) %}
+  {% set cur_correct = (q.correct_index if q else 0) %}
+  {% set cur_active = ('1' if (q.is_active if q else True) else '') %}
+{% endif %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.questions') }}" class="text-muted-2 small"><i class="bi bi-arrow-left"></i> Back to questions</a>
+  <h1 class="h3 mt-1 mb-0">{{ 'Edit' if q else 'New' }} question</h1>
+</div>
+
+<div class="card p-4" style="max-width:820px">
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label">Category</label>
+      <select name="category" id="categorySelect" class="form-select" required>
+        <option value="" disabled {{ 'selected' if not cur_category }}>Choose a category…</option>
+        {% for val, label in categories %}
+        <option value="{{ val }}" {{ 'selected' if cur_category == val }}>{{ label }}</option>
+        {% endfor %}
+        <option value="interest" {{ 'selected' if cur_category == 'interest' }}>Interest Area (Likert)</option>
+      </select>
+      <div class="form-text">Aptitude categories use multiple-choice scoring; "Interest Area" uses a 1–5 agreement scale.</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Question text</label>
+      <textarea name="text" rows="2" class="form-control" required
+                placeholder="e.g. Which number completes the sequence 2, 4, 8, 16, __ ?">{{ cur_text }}</textarea>
+    </div>
+
+    <!-- MCQ section -->
+    <div id="mcqSection" class="mb-2">
+      <label class="form-label d-block">Answer options <span class="text-muted-2 small">(select the correct one)</span></label>
+      <div id="optionsWrap">
+        {% set opts = cur_options if cur_options else ['', ''] %}
+        {% for opt in opts %}
+        <div class="input-group mb-2 option-row">
+          <span class="input-group-text">
+            <input class="form-check-input mt-0" type="radio" name="correct_index"
+                   value="{{ loop.index0 }}" {{ 'checked' if cur_correct|string == loop.index0|string }}>
+          </span>
+          <input type="text" name="option" class="form-control" value="{{ opt }}" placeholder="Option text">
+          <button type="button" class="btn btn-outline-danger remove-option"><i class="bi bi-x-lg"></i></button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="addOption" class="btn btn-sm btn-outline-navy">
+        <i class="bi bi-plus-lg"></i> Add option
+      </button>
+    </div>
+
+    <!-- Interest section -->
+    <div id="interestSection" class="mb-3 d-none">
+      <label class="form-label">Interest area</label>
+      <select name="interest_area" class="form-select">
+        <option value="" disabled {{ 'selected' if not cur_interest }}>Choose an area…</option>
+        {% for area in interest_areas %}
+        <option value="{{ area }}" {{ 'selected' if cur_interest == area }}>{{ area|title }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">Interest questions are answered on a Strongly Disagree → Strongly Agree scale.</div>
+    </div>
+
+    <div class="form-check form-switch mb-4 mt-3">
+      <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ 'checked' if cur_active }}>
+      <label class="form-check-label" for="isActive">Active (included in the live assessment)</label>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-navy"><i class="bi bi-check-lg"></i> Save question</button>
+      <a href="{{ url_for('admin.questions') }}" class="btn btn-light">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const categorySelect = document.getElementById('categorySelect');
+  const mcqSection = document.getElementById('mcqSection');
+  const interestSection = document.getElementById('interestSection');
+  const optionsWrap = document.getElementById('optionsWrap');
+  const addOption = document.getElementById('addOption');
+
+  function syncSections() {
+    const isInterest = categorySelect.value === 'interest';
+    mcqSection.classList.toggle('d-none', isInterest);
+    interestSection.classList.toggle('d-none', !isInterest);
+  }
+
+  function reindexRadios() {
+    optionsWrap.querySelectorAll('.option-row').forEach((row, i) => {
+      const radio = row.querySelector('input[type=radio]');
+      if (radio) radio.value = i;
+    });
+  }
+
+  function newRow() {
+    const row = document.createElement('div');
+    row.className = 'input-group mb-2 option-row';
+    row.innerHTML =
+      '<span class="input-group-text"><input class="form-check-input mt-0" type="radio" name="correct_index"></span>' +
+      '<input type="text" name="option" class="form-control" placeholder="Option text">' +
+      '<button type="button" class="btn btn-outline-danger remove-option"><i class="bi bi-x-lg"></i></button>';
+    optionsWrap.appendChild(row);
+    reindexRadios();
+  }
+
+  addOption.addEventListener('click', newRow);
+
+  optionsWrap.addEventListener('click', function (e) {
+    const btn = e.target.closest('.remove-option');
+    if (!btn) return;
+    const rows = optionsWrap.querySelectorAll('.option-row');
+    if (rows.length <= 2) { alert('At least two options are required.'); return; }
+    btn.closest('.option-row').remove();
+    reindexRadios();
+  });
+
+  categorySelect.addEventListener('change', syncSections);
+  syncSections();
+})();
+</script>
+{% endblock %}
+
+

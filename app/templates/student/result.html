@@ -1,0 +1,160 @@
+{% extends "student_base.html" %}
+{% set active = 'history' %}
+{% block title %}Your Results — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Your career results</h1>
+    <p class="text-muted-2 mb-0">Assessment completed {{ attempt.created_at.strftime('%d %b %Y at %H:%M') }}.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('student.result_pdf', attempt_id=attempt.id) }}" class="btn btn-accent">
+      <i class="bi bi-file-earmark-pdf"></i> Download PDF report</a>
+    <a href="{{ url_for('student.test') }}" class="btn btn-outline-navy">Retake</a>
+  </div>
+</div>
+
+<!-- Score summary -->
+<div class="row g-3">
+  <div class="col-md-3 col-6">
+    <div class="card stat-card p-3 h-100"><div class="lbl">Logical</div>
+      <div class="num mt-1">{{ '%.0f'|format(attempt.logical_score) }}%</div></div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card p-3 h-100"><div class="lbl">Analytical</div>
+      <div class="num mt-1">{{ '%.0f'|format(attempt.analytical_score) }}%</div></div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card p-3 h-100"><div class="lbl">Verbal</div>
+      <div class="num mt-1">{{ '%.0f'|format(attempt.verbal_score) }}%</div></div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card p-3 h-100" style="border-left-color:var(--navy-700)"><div class="lbl">Overall</div>
+      <div class="num mt-1">{{ '%.0f'|format(attempt.overall_score) }}%</div></div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Your strength profile</h2>
+      <canvas id="profileChart" height="260"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h2 class="h6 text-uppercase text-muted-2" style="letter-spacing:.08em">Career match scores</h2>
+      <canvas id="matchChart" height="260"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Recommended careers -->
+<h2 class="h4 mt-4 mb-3"><i class="bi bi-stars" style="color:var(--amber-500)"></i> Recommended careers for you</h2>
+<div class="row g-3">
+  {% for rec in attempt.recommendations %}
+  <div class="col-lg-6">
+    <div class="card rec-card p-4 h-100">
+      <div class="d-flex gap-3">
+        <div class="rec-icon"><i class="bi {{ rec.icon }}"></i></div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start">
+            <h3 class="h5 mb-1">{{ rec.name }}</h3>
+            <div class="match-ring" style="--pct: {{ rec.match }}">
+              <span>{{ '%.0f'|format(rec.match) }}%</span>
+            </div>
+          </div>
+          <p class="text-muted-2 small mb-2">{{ rec.description }}</p>
+          <p class="small mb-2"><i class="bi bi-lightbulb" style="color:var(--amber-500)"></i> {{ rec.reason }}</p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge badge-navy rounded-pill"><i class="bi bi-cash"></i> {{ rec.avg_salary }}</span>
+            <span class="badge badge-soft rounded-pill"><i class="bi bi-graph-up-arrow"></i> {{ rec.growth_outlook }} growth</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Recommended programs -->
+<h2 class="h4 mt-4 mb-3"><i class="bi bi-mortarboard" style="color:var(--navy-700)"></i> Suggested university programs</h2>
+{% if attempt.programs %}
+<div class="row g-3">
+  {% for p in attempt.programs %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card program-card p-3 h-100">
+      <h3 class="h6 mb-1">{{ p.name }}</h3>
+      <div class="small text-muted-2 mb-2">
+        {{ p.degree_level }}{% if p.duration %} · {{ p.duration }}{% endif %}
+      </div>
+      {% if p.description %}<p class="small mb-2">{{ p.description }}</p>{% endif %}
+      {% if p.universities %}
+      <div class="small text-muted-2"><i class="bi bi-building"></i> {{ p.universities }}</div>
+      {% endif %}
+      <div class="mt-2"><span class="badge badge-soft rounded-pill">for {{ p.for_career }}</span></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted-2">No matching programs are configured yet.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const profile = {{ {
+    'Logical': attempt.logical_score,
+    'Analytical': attempt.analytical_score,
+    'Verbal': attempt.verbal_score,
+    'Science': attempt.interest.get('science', 0),
+    'Technology': attempt.interest.get('technology', 0),
+    'Business': attempt.interest.get('business', 0),
+    'Arts': attempt.interest.get('arts', 0),
+    'Healthcare': attempt.interest.get('healthcare', 0),
+    'Engineering': attempt.interest.get('engineering', 0),
+    'Social': attempt.interest.get('social', 0)
+  } | tojson }};
+
+  const matches = {{ attempt.recommendations | map(attribute='name') | list | tojson }};
+  const matchScores = {{ attempt.recommendations | map(attribute='match') | list | tojson }};
+
+  const NAVY = '#1f3a5f', AMBER = '#d98c3f';
+
+  new Chart(document.getElementById('profileChart'), {
+    type: 'radar',
+    data: {
+      labels: Object.keys(profile),
+      datasets: [{
+        label: 'Your score',
+        data: Object.values(profile),
+        backgroundColor: 'rgba(217,140,63,.18)',
+        borderColor: AMBER, borderWidth: 2, pointBackgroundColor: NAVY
+      }]
+    },
+    options: {
+      scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { stepSize: 25 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  new Chart(document.getElementById('matchChart'), {
+    type: 'bar',
+    data: {
+      labels: matches,
+      datasets: [{ label: 'Match %', data: matchScores, backgroundColor: NAVY, borderRadius: 6 }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { suggestedMin: 0, suggestedMax: 100 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+{% endblock %}
+
+
