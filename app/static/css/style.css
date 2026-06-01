@@ -234,7 +234,7 @@ a:hover { color: var(--amber-500); }
 .form-control:focus, .form-select:focus { border-color: var(--amber-400); box-shadow: 0 0 0 .2rem rgba(217,140,63,.15); }
 .form-label { font-weight: 600; font-size: .9rem; color: var(--navy-800); }
 
-footer.site-footer { border-top: 1px solid var(--line); color: var(--muted); padding: 2rem 0; }
+footer.site-footer { display: none; border-top: 1px solid var(--line); color: var(--muted); padding: 2rem 0; }
 
 /* ============================================================
    Admin panel additions
